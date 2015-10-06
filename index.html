@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo App</title>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="js/jquery.elastic.source.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+    <style>
+        @media (max-width: 890px) {
+            .todoTable {
+                min-width:99vw;
+            }
+
+            .todoRow {
+                min-width:99vw;
+            }
+        }
+
+        @media (min-width: 891px) {
+            .todoTable {
+                min-width:80vw;
+            }
+
+            .todoRow {
+                min-width:80vw;
+            }
+        }
+
+        body {
+            box-sizing:border-box;
+        }
+
+        select {
+            min-width:90%;
+        }
+
+        textarea {
+            min-width:98%;
+        }
+
+        .page {
+            display:flex;
+            flex-direction:column;
+            justify-content:space-around;
+            align-items:center;
+
+            min-height:100vh;
+            min-width:100vw;
+        }
+
+        .todoTable {
+            display:flex;
+            flex-direction:column;
+            justify-content:flex-start;
+            align-items:flex-start;
+        }
+
+        .todoRow:nth-child(2n) {
+            background-color: #e6e6e6;
+        }
+
+        .todoRow {
+            display:flex;
+            flex-direction:row;
+            justify-content:flex-start;
+            align-items:center;
+
+            padding:5px;
+        }
+
+        .todoHeaderRow {
+            font-weight: 600;
+            font-size:x-large;
+        }
+
+        .todoCol {
+            flex-basis:10%;
+        }
+
+        .controlCol {
+            flex-grow:1;
+        }
+
+        .statusCol {
+            flex-grow:1;
+        }
+
+        .taskCol {
+            flex-grow:5;
+            align-self:flex-start;
+        }
+
+        .urgencyCol {
+            flex-grow:1;
+        }
+
+        .labelCol {
+            flex-grow:1;
+
+            display:flex;
+            flex-direction:row;
+            justify-content:flex-start;
+            align-items:flex-start;
+            flex-wrap:wrap;
+        }
+
+        .dateAddedCol {
+            flex-grow:2;
+        }
+
+        .dateCompletedCol {
+            flex-grow:2;
+        }
+
+        .label {
+            margin-right:2px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="todoTable">
+            <div class="todoRow todoHeaderRow">
+                <div class="todoCol controlCol">Controls</div>
+                <div class="todoCol statusCol">Status</div>
+                <div class="todoCol taskCol">Task</div>
+                <div class="todoCol urgencyCol">Urgency</div>
+                <div class="todoCol labelCol">Label</div>
+                <div class="todoCol dateAddedCol">Date Added</div>
+                <div class="todoCol dateCompletedCol">Date Complete</div>
+            </div>
+        </div>
+    </div>
+<script>
+    var prevData = {};
+    var contentHeaderOnly = '';
+    var updateInterval;
+    $(document).ready(function(){
+        contentHeaderOnly = $('.todoTable').html();
+        getData();
+        updateInterval = setInterval(function(){getData();}, 10000);
+    });
+
+    function getData(){
+        var sheetId = "1ODsN0A41PbET2DJGlxVOVfFqr4Jwwy65TvsDt4ZRM8M";
+
+        var sheetUrl = "https://spreadsheets.google.com/feeds/list/" + sheetId + "/od6/public/values?alt=json";
+
+        $.getJSON(sheetUrl, function(data) {
+            updateTable(data.feed.entry);
+        });
+    }
+
+    function updateTable(data){
+        if(JSON.stringify(data) === JSON.stringify(prevData)){
+            //Do nothing
+        }else{
+            //otherwise update the table
+            prevData = data;
+
+            //Reset to header only
+            $('.todoTable').html(contentHeaderOnly);
+
+            //Iterate through data
+            $(data).each(function(){
+                if(this.gsx$dateadded.$t != ''){
+                    var content = '<div class="todoRow todoDataRow todoDataRow-' + this.gsx$id.$t + '">' +
+                            '<div class="todoCol controlCol"><button class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-trash"></span></button></div>' +
+                            '<div class="todoCol statusCol">' + generateStatusDropdown(this.gsx$status.$t) + '</div>' +
+                            '<div class="todoCol taskCol">' + generateTaskField(this.gsx$task.$t) + '</div>' +
+                            '<div class="todoCol urgencyCol">' + generateUrgencyDropdown(this.gsx$urgency.$t) + '</div>' +
+                            '<div class="todoCol labelCol">' + generateLabels(this.gsx$label.$t) + '</div>' +
+                            '<div class="todoCol dateAddedCol">' + this.gsx$dateadded.$t + '</div>' +
+                            '<div class="todoCol dateCompletedCol">' + this.gsx$datecompleted.$t + '</div>' +
+                            '</div>';
+                    $('.todoTable').append(content);
+                }
+            });
+            $(".elastic").elastic();
+        }
+    }
+
+    function generateTaskField(task){
+        return '<textarea class="elastic">' + task + '</textarea>';
+    }
+
+    function generateStatusDropdown(selected){
+        var content = '<select>' +
+                '<option ' + (selected == 'Todo' ? "selected" : "") + '>Todo</option>' +
+                '<option ' + (selected == 'Doing' ? "selected" : "") + '>Doing</option>' +
+                '<option ' + (selected == 'Done' ? "selected" : "") + '>Done</option>' +
+                '<option ' + (selected == 'Backburner' ? "selected" : "") + '>Backburner</option>' +
+                '<option ' + (selected == 'Revived' ? "selected" : "") + '>Revived</option>' +
+                '</select>';
+        return content;
+    }
+
+    function generateUrgencyDropdown(selected){
+        var content = '<select>' +
+                '<option ' + (selected == 'Lowest' ? "selected" : "") + '>Lowest</option>' +
+                '<option ' + (selected == 'Lower' ? "selected" : "") + '>Lower</option>' +
+                '<option ' + (selected == 'Low' ? "selected" : "") + '>Low</option>' +
+                '<option ' + (selected == 'Normal' ? "selected" : "") + '>Normal</option>' +
+                '<option ' + (selected == 'High' ? "selected" : "") + '>High</option>' +
+                '<option ' + (selected == 'Higer' ? "selected" : "") + '>Higer</option>' +
+                '<option ' + (selected == 'Highest' ? "selected" : "") + '>Highest</option>' +
+                '</select>';
+        return content;
+    }
+
+    function generateLabels(labelString){
+        var labels = labelString.split(", ");
+
+        var content = '';
+
+        $.each(labels, function(index, label){
+            content += '<span class="label label-info">' + label + '</span>';
+        });
+
+        return content
+    }
+</script>
+</body>
+</html>
