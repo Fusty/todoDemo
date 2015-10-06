@@ -32,6 +32,7 @@
 
         body {
             box-sizing:border-box;
+            font-family:"Arial";
         }
 
         select {
@@ -73,7 +74,8 @@
         }
 
         .todoHeaderRow {
-            font-weight: 600;
+            font-family:"Arial Black";
+            font-weight: 500;
             font-size:x-large;
         }
 
@@ -83,6 +85,11 @@
 
         .controlCol {
             flex-grow:1;
+
+            display:flex;
+            flex-direction:row;
+            justify-content:center;
+            flex-wrap:wrap;
         }
 
         .statusCol {
@@ -118,7 +125,13 @@
 
         .label {
             margin-right:2px;
+            font-family:"Arial";
         }
+
+        .btn {
+            font-size:larger;
+        }
+
 
     </style>
 </head>
@@ -146,6 +159,35 @@
         updateInterval = setInterval(function(){getData();}, 10000);
     });
 
+    function saveRow(rowNum){
+        //Gather Row Data
+        var parent = $(".todoDataRow-"+rowNum);
+        var data = {};
+
+        data.status = $(".statusDrop", parent).children(":selected").text();
+        data.task = $(".taskTextarea", parent).text();
+        data.urgency = $(".urgencyDrop", parent).children(":selected").text();
+        data.labels = [];
+        $(".label", parent).each(function(){
+            data.labels.push($(this).text());
+        });
+
+        data.labels = data.labels.join(", ");
+
+        $.ajax({
+            url: "https://script.google.com/macros/s/AKfycbx9kDQByqGVD2n_mgBrmfAZ6xkrrC6ijeYM_CLGmbutnTKVC5E/exec",
+            method: "POST",
+            data: {data : data}
+        }).done(function() {
+            getData();
+        });
+    }
+
+    function deleteRow(rowNum){
+        console.log("Deleting Row #"+rowNum);
+
+    }
+
     function getData(){
         var sheetId = "1ODsN0A41PbET2DJGlxVOVfFqr4Jwwy65TvsDt4ZRM8M";
 
@@ -170,7 +212,9 @@
             $(data).each(function(){
                 if(this.gsx$dateadded.$t != ''){
                     var content = '<div class="todoRow todoDataRow todoDataRow-' + this.gsx$id.$t + '">' +
-                            '<div class="todoCol controlCol"><button class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-trash"></span></button></div>' +
+                            '<div class="todoCol controlCol btn-group"><button class="btn btn-sm btn-danger btn-delete" onclick="$(\'.todoDataRow-'+this.gsx$id.$t+' .btn-confirmDelete\').toggle();"><span class="glyphicon glyphicon-trash"></span></button>' +
+                            '<button class="btn btn-sm btn-warning btn-confirmDelete" style="display:none;" onclick="deleteRow('+this.gsx$id.$t+')">Sure?</button>' +
+                            '<button class="btn btn-sm btn-primary btn-save" onclick="saveRow('+this.gsx$id.$t+')"><span class="glyphicon glyphicon-floppy-disk"></span></button></div>' +
                             '<div class="todoCol statusCol">' + generateStatusDropdown(this.gsx$status.$t) + '</div>' +
                             '<div class="todoCol taskCol">' + generateTaskField(this.gsx$task.$t) + '</div>' +
                             '<div class="todoCol urgencyCol">' + generateUrgencyDropdown(this.gsx$urgency.$t) + '</div>' +
@@ -181,16 +225,18 @@
                     $('.todoTable').append(content);
                 }
             });
+
+            //Elasticify those sections
             $(".elastic").elastic();
         }
     }
 
     function generateTaskField(task){
-        return '<textarea class="elastic">' + task + '</textarea>';
+        return '<textarea class="elastic taskTextarea">' + task + '</textarea>';
     }
 
     function generateStatusDropdown(selected){
-        var content = '<select>' +
+        var content = '<select class="statusDrop">' +
                 '<option ' + (selected == 'Todo' ? "selected" : "") + '>Todo</option>' +
                 '<option ' + (selected == 'Doing' ? "selected" : "") + '>Doing</option>' +
                 '<option ' + (selected == 'Done' ? "selected" : "") + '>Done</option>' +
@@ -201,7 +247,7 @@
     }
 
     function generateUrgencyDropdown(selected){
-        var content = '<select>' +
+        var content = '<select class="urgencyDrop">' +
                 '<option ' + (selected == 'Lowest' ? "selected" : "") + '>Lowest</option>' +
                 '<option ' + (selected == 'Lower' ? "selected" : "") + '>Lower</option>' +
                 '<option ' + (selected == 'Low' ? "selected" : "") + '>Low</option>' +
