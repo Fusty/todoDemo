@@ -76,7 +76,7 @@
         .todoHeaderRow {
             font-family:"Arial Black";
             font-weight: 500;
-            font-size:x-large;
+            font-size:larger;
         }
 
         .todoCol {
@@ -99,6 +99,10 @@
         .taskCol {
             flex-grow:5;
             align-self:flex-start;
+        }
+
+        .todoHeaderRow .taskCol {
+            align-self:center;
         }
 
         .urgencyCol {
@@ -144,23 +148,16 @@
                 <div class="todoCol taskCol">Task</div>
                 <div class="todoCol urgencyCol">Urgency</div>
                 <div class="todoCol labelCol">Label</div>
-                <div class="todoCol dateAddedCol">Date Added</div>
-                <div class="todoCol dateCompletedCol">Date Complete</div>
+                <div class="todoCol dateAddedCol">Added On</div>
+                <div class="todoCol dateCompletedCol">Completed On</div>
             </div>
         </div>
     </div>
-    <form id="hiddenForm" action="https://script.google.com/macros/s/AKfycbx9kDQByqGVD2n_mgBrmfAZ6xkrrC6ijeYM_CLGmbutnTKVC5E/exec" method="GET">
-        <input id="hiddenStatus" name="status" type="hidden"/>
-        <input id="hiddenTask" name="task" type="hidden"/>
-        <input id="hiddenUrgency" name="urgency" type="hidden"/>
-        <input id="hiddenLabel" name="label" type="hidden"/>
-        <input id="hiddenSheetId" name="sheetId" type="hidden"/>
-        <input id="hiddenRow" name="row" type="hidden"/>
-    </form>
 <script>
     var prevData = {};
     var contentHeaderOnly = '';
     var updateInterval;
+    var inTransit = false;
     $(document).ready(function(){
         contentHeaderOnly = $('.todoTable').html();
         getData();
@@ -168,13 +165,16 @@
     });
 
     function saveRow(rowNum){
+        inTransit = true;
         //Gather Row Data
         var parent = $(".todoDataRow-"+rowNum);
         var data = {};
 
         data.status = $(".statusDrop", parent).children(":selected").text();
-        data.task = $(".taskTextarea", parent).text();
+        data.task = $($(".taskTextarea", parent).parent().children()[1]).text();
         data.urgency = $(".urgencyDrop", parent).children(":selected").text();
+        data.sheetId = "1ODsN0A41PbET2DJGlxVOVfFqr4Jwwy65TvsDt4ZRM8M";
+        data.row = rowNum;
         data.labels = [];
         $(".label", parent).each(function(){
             data.labels.push($(this).text());
@@ -182,16 +182,43 @@
 
         data.labels = data.labels.join(", ");
 
-        $("#hiddenStatus").val(data.status);
-        $("#hiddenTask").val(data.task);
-        $("#hiddenUrgency").val(data.urgency);
-        $("#hiddenLabel").val(data.labels);
-        $("#hiddenSheetId").val("1ODsN0A41PbET2DJGlxVOVfFqr4Jwwy65TvsDt4ZRM8M");
-        $("#hiddenRow").val(rowNum);
-        $("#hiddenForm").attr("action", $("#hiddenForm").attr("action"));
+        var url = "https://script.google.com/macros/s/AKfycbx9kDQByqGVD2n_mgBrmfAZ6xkrrC6ijeYM_CLGmbutnTKVC5E/exec?";
 
-        $("#hiddenForm").submit();
+        url += "status="+data.status;
+        url += "&task="+data.task;
+        url += "&urgency="+data.urgency;
+        url += "&label="+data.labels;
+        url += "&row="+data.row;
+        url += "&sheetId="+data.sheetId;
 
+        if(task == ''){
+            if(confirm("A blank task will be deleted, are you sure?")){
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    async: false,
+                    contentType: "application/json",
+                    dataType: 'jsonp',
+                    complete: function(){
+                        inTransit = false;
+                        getData();
+                    }
+                });
+            }
+        }else{
+            $.ajax({
+                type: 'GET',
+                url: url,
+                async: false,
+                contentType: "application/json",
+                dataType: 'jsonp',
+                complete: function(){
+                    inTransit = false;
+                    getData();
+                }
+            });
+
+        }
     }
 
     function deleteRow(rowNum){
@@ -200,13 +227,15 @@
     }
 
     function getData(){
-        var sheetId = "1ODsN0A41PbET2DJGlxVOVfFqr4Jwwy65TvsDt4ZRM8M";
+        if(!inTransit){
+            var sheetId = "1ODsN0A41PbET2DJGlxVOVfFqr4Jwwy65TvsDt4ZRM8M";
 
-        var sheetUrl = "https://spreadsheets.google.com/feeds/list/" + sheetId + "/od6/public/values?alt=json";
+            var sheetUrl = "https://spreadsheets.google.com/feeds/list/" + sheetId + "/od6/public/values?alt=json";
 
-        $.getJSON(sheetUrl, function(data) {
-            updateTable(data.feed.entry);
-        });
+            $.getJSON(sheetUrl, function(data) {
+                updateTable(data.feed.entry);
+            });
+        }
     }
 
     function updateTable(data){
