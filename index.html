@@ -174,13 +174,30 @@
 
         data.labels = data.labels.join(", ");
 
-        $.ajax({
-            url: "https://script.google.com/macros/s/AKfycbx9kDQByqGVD2n_mgBrmfAZ6xkrrC6ijeYM_CLGmbutnTKVC5E/exec",
-            method: "POST",
-            data: {data : data}
-        }).done(function() {
-            getData();
-        });
+//        $.ajax({
+//            url: "https://script.google.com/macros/s/AKfycbx9kDQByqGVD2n_mgBrmfAZ6xkrrC6ijeYM_CLGmbutnTKVC5E/exec",
+//            method: "POST",
+//            data: {data : data}
+//        }).done(function() {
+//            getData();
+//        });
+
+        var url = "https://script.google.com/macros/s/AKfycbx9kDQByqGVD2n_mgBrmfAZ6xkrrC6ijeYM_CLGmbutnTKVC5E/exec";
+        var params = "lorem=ipsum&name=binny";
+        http.open("POST", url, true);
+
+        //Send the proper header information along with the request
+        http.setRequestHeader("Content-type", "application/json-rpc");
+        http.setRequestHeader("Connection", "close");
+
+        http.onreadystatechange = function() {//Call a function when the state changes.
+            if(http.readyState == 4 && http.status == 200) {
+                alert(http.responseText);
+            }
+        }
+
+        http.send(data);
+
     }
 
     function deleteRow(rowNum){
