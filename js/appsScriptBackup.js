@@ -1,28 +1,22 @@
 function onEdit(event) {
     Logger.log("Saw an edit on "+ new Date());
-    findRowsToProcess();
+    processRow(event.range);
 }
 
-function findRowsToProcess(){
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('todo');
+function onChange(event) {
+    Logger.log("Saw a change on "+ new Date());
+    processRow(event.range);
+}
 
-    //Process all rows with a set task
-    var taskValues = sheet.getRange("B1:B").getValues();
-    var lastRow = taskValues.filter(String).length;
-
-    for(i = 2; i <= lastRow; i++){
-        //Check for dateAdded and process based on that
-        var range = sheet.getRange("E"+i);
-        if(range.getValue() == ''){
-            processRow(range);
-        }
-        var idRange = sheet.getRange("G"+i);
-        idRange.setValue(i);
+function findRowsToProcess(sheetId){
+    if(SpreadsheetApp.getActiveSpreadsheet() == null){
+        var sheet = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/"+sheetId+"/edit").getSheetByName('todo');
+    }else{
+        var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('todo');
     }
 
-    //Process all rows with a set date added
-    var dateAddedValue = sheet.getRange("E1:E").getValues();
-    var lastRow = dateAddedValue.filter(String).length;
+    //Process all rows
+    var lastRow = sheet.getMaxRows();
 
     Logger.log(lastRow);
 
@@ -30,9 +24,6 @@ function findRowsToProcess(){
         //Check for dateAdded and process based on that
         var range = sheet.getRange("E"+i);
         processRow(range);
-
-        var idRange = sheet.getRange("G"+i);
-        idRange.setValue(i);
     }
 
 }
@@ -55,11 +46,12 @@ function processRow(range) {
     var datestring = ("0" + date.getDate()).slice(-2) + "-" + ("0"+(date.getMonth()+1)).slice(-2) + "-" +
         date.getFullYear() + " " + ("0" + date.getHours()).slice(-2) + ":" + ("0" + date.getMinutes()).slice(-2);
 
+    Logger.log("Automagic Timestamps for Row #"+rangeRow);
     //Automagic Timestamps
     if(taskRange.getValue() != '' && dateAddedRange.getValue() == ''){
         dateAddedRange.setValue(datestring);
     }
-
+    Logger.log("Parsing labels for Row #"+rangeRow);
     //Parse labels
     if(taskRange.getValue() != ''){
         var reg = /label(\S*)/g;
@@ -78,6 +70,7 @@ function processRow(range) {
         taskRange.setValue(taskRange.getValue().replace(/label\S*/g, "").trim());
     }
 
+    Logger.log("Parsing Statuses for Row #"+rangeRow);
     //Parse statuses
     if(taskRange.getValue() != ''){
         var reg = /status(\S*)/g;
@@ -96,6 +89,7 @@ function processRow(range) {
         taskRange.setValue(taskRange.getValue().replace(/status\S*/g, "").trim());
     }
 
+    Logger.log("Parsing Urgencies for Row #"+rangeRow);
     //Parse urgencies
     if(taskRange.getValue() != ''){
         var reg = /urgency(\S*)/g;
@@ -114,6 +108,7 @@ function processRow(range) {
         taskRange.setValue(taskRange.getValue().replace(/urgency\S*/g, "").trim());
     }
 
+    Logger.log("Complete Date for Row #"+rangeRow);
     //Set completion date
     if(dateCompleteRange.getValue() == '' && statusRange.getValue().toLowerCase() == "done"){
         dateCompleteRange.setValue(datestring);
@@ -129,23 +124,41 @@ function processRow(range) {
         urgencyRange.setValue("Normal");
     }
 
+    Logger.log("Auto ID for Row #"+rangeRow);
+    //Auto ID
+    var idRange = sheet.getRange("G"+rangeRow);
+    idRange.setValue(rangeRow);
+
     //Remove #todo
     taskRange.setValue(taskRange.getValue().replace("#todo",""));
 
     //Removing unnecessary fields when task is unset
-    if(taskRange.getValue() == ''){
-        setTimeout(function(){sheet.deleteRow(rangeRow);}, 200);
+    if(taskRange.getValue().trim() == ''){
+        Logger.log("preDelete for Row #"+rangeRow);
+        sheet.deleteRow(rangeRow);
+    }else{
+        Logger.log("Row #"+rangeRow+" was not empty: "+taskRange.getValue().trim());
     }
 }
 
 function doGet(event){
     var targetRow = event.parameter.row;
-    var sheet = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/"+event.parameter.sheetId+"/edit");
+    var sheet = SpreadsheetApp.openByUrl("https://docs.google.com/spreadsheets/d/"+event.parameter.sheetId+"/edit").getSheetByName('todo');
 
-    updateColumn("status", targetRow, event.parameter.status, sheet);
-    updateColumn("task", targetRow, event.parameter.task, sheet);
-    updateColumn("urgency", targetRow, event.parameter.urgency, sheet);
-    updateColumn("label", targetRow, event.parameter.label, sheet);
+    //This is a new entry!
+    if(targetRow == -1){
+        sheet.appendRow([event.parameter.status, event.parameter.task, event.parameter.urgency, event.parameter.label]);
+    }else{
+        Logger.log("Web request to change Row #"+targetRow);
+
+        updateColumn("status", targetRow, event.parameter.status, sheet);
+        updateColumn("task", targetRow, event.parameter.task, sheet);
+        updateColumn("urgency", targetRow, event.parameter.urgency, sheet);
+        updateColumn("label", targetRow, event.parameter.label, sheet);
+    }
+
+    Utilities.sleep(300)
+    findRowsToProcess(event.parameter.sheetId);
 
     return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.JAVASCRIPT);
 }
@@ -181,8 +194,8 @@ function updateColumn(targetColumn, targetRow, targetValue, sheet){
     }
 
     if(targetRow > 1){
+        Logger.log("Setting Row "+targetRange.getRow()+" Col "+targetRange.getColumn()+" to "+targetValue);
         targetRange.setValue(targetValue);
-        processRow(targetRange);
     }
 
 }
