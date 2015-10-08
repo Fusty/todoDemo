@@ -255,8 +255,6 @@
 
         data.labels = data.labels.join(", ").trim();
 
-        console.log(data);
-
         var url = "https://script.google.com/macros/s/AKfycbzrrLk8qaJuuLsW5qMB1x0FpXb9oz2Lgf9w77a-7p2aYLHi-CI/exec?";
 
         url += "status="+data.status;
@@ -314,7 +312,6 @@
         data.sheetId = "1fPbwpJ3NqfxVjWQKSDyk9cfqep2wXjdMMO446_OMFSw";
         data.row = -1;
         data.labels = $($(".newLabelTextarea").parent().children()[1]).text().trim();
-        console.log(data.labels.length);
         data.labels = data.labels.replace(",", "");
         tempLabels = data.labels.split(" ");
         data.labels = [];
@@ -324,8 +321,6 @@
         });
 
         data.labels = data.labels.join(", ").trim();
-
-        console.log(data);
 
         var url = "https://script.google.com/macros/s/AKfycbzrrLk8qaJuuLsW5qMB1x0FpXb9oz2Lgf9w77a-7p2aYLHi-CI/exec?";
 
@@ -377,7 +372,7 @@
 
         $($(".delete-button", parent).children()[0]).addClass("spinning");
         setTimeout(function(){
-            $(".delete-button", parent).parents(".todoDataRow").remove();
+            $(".delete-button", parent).parent().parent().remove();
         },500);
 
         var url = "https://script.google.com/macros/s/AKfycbzrrLk8qaJuuLsW5qMB1x0FpXb9oz2Lgf9w77a-7p2aYLHi-CI/exec?";
@@ -431,7 +426,6 @@
     }
 
     function updateTable(data){
-        console.log(data);
         if(JSON.stringify(data) == JSON.stringify(prevData)){
             //Do nothing
             console.log("same data");
