@@ -9,7 +9,7 @@ Just clone this repo in a web acessible directory and follow the instructions on
 2.  Get the spreadsheet url id (Id in url when in the data table edit mode)
 3.  Copy the script into the script editor (Start a blank project bound to this spreadsheet)
 4.  Setup a trigger every minute for findRowsToProcess()
-5.  Publish the Spreadsheet and Deploy the script as a web app
+5.  Publish the Spreadsheet (sheet1 only) and Deploy the script as a web app (so only you can access it)
 6.  Get the web app url
 7.  Copy the web app url and spreadsheet url id into main.js
 8.  Set up an IFTTT recipe to push new rows to the spreadsheet
