@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo App</title>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="css/materialize.min.css">
+    <link rel="stylesheet" href="css/site.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.js"></script>
+    <script type="text/javascript" src="js/jquery.elastic.source.js"></script>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <script type="text/javascript" src="js/main.js"></script>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+</head>
+<body>
+    <div class="page blue darken-3">
+        <div class="nav">
+            <button class="editSpreadsheet btn-floating" title="View Source Data" onclick="viewSourceData();"><i class="fa fa-table"></i></button>
+        </div>
+        <div class="card z-depth-2 loginCard">
+            <div class="card-content">
+                <span class="card-title" style="color:black;">Login required!</span>
+                <p>You must log in to your Google account to interact with this app.</p>
+                <div class="card-action">
+                    <a href="#" class="teal lighten-2 btn" onclick="doLogin();">Login to Google</a>
+                    <a href="#" class="orange darken-1 btn" onclick="ignoreLogin(true);">I don't really care</a>
+                </div>
+            </div>
+        </div>
+        <div class="card z-depth-2 setupInstructions">
+            <div class="card-content">
+                <span class="card-title" style="color:black;">Looks like you need to set this up!</span>
+                <p>It's not that bad, follow these instructions.</p>
+                <h4>1.  Create a spreadsheet in Google Drive/Docs</h4>
+                <p>Log into Google Drive/Docs and create a new spreadsheet.
+                If you wish to integrate with <a href="http://ifttt.com">IFTTT</a>
+                you must create the spreadsheet in a folder named "IFTTT".  Name the document something useful.
+                Delete all but the very first row in this spreadsheet.</p>
+                <img src="img/spreadsheetcleaned.png"/>
+                <h4>2.  Add the script code</h4>
+                <p>Click the "Tools" menu and select "Script Editor".  Select the option "Blank Project".
+                Once you are in the editor delete everything and Add the code in the block below.  Just cut and paste it in.
+                You must change the first line to reference the url where your todo app resides
+                (e.g. http://fusty.github.io/todo)</p>
+                <pre class="blue lighten-5 z-depth-1">
+var todoAppUrl = &quot;http://fusty.github.com/todo&quot;;
+function onEdit(event) {
+    Logger.log(&quot;Saw an edit on &quot;+ new Date());
+    processRow(event.range);
+}
+
+function onChange(event) {
+    Logger.log(&quot;Saw a change on &quot;+ new Date());
+    processRow(event.range);
+}
+
+function findRowsToProcess(sheetId){
+    if(SpreadsheetApp.getActiveSpreadsheet() == null){
+      var sheet = SpreadsheetApp.openByUrl(&quot;https://docs.google.com/spreadsheets/d/&quot;+sheetId+&quot;/edit&quot;).getSheets()[0];
+    }else{
+      var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheets()[0];
+    }
+
+
+    if(sheet.getRange(&quot;A1&quot;).getValue() != &quot;Status&quot;){
+      if([&quot;Todo&quot;, &quot;Doing&quot;, &quot;Done&quot;, &quot;Backburner&quot;, &quot;Revived&quot;].indexOf(sheet.getRange(&quot;A1&quot;).getValue()) == -1){
+        //We've got a task in the first row somehow, insert the header there
+        sheet.insertRowBefore(1);
+      }
+      sheet.getRange(&quot;A1:G1&quot;).setValues([[&quot;Status&quot;, &quot;Task&quot;, &quot;Urgency&quot;, &quot;Label&quot;, &quot;Date Added&quot;, &quot;Date Completed&quot;, &quot;ID&quot;]]);
+    }
+
+    //Process all rows
+    var lastRow = sheet.getMaxRows();
+
+    for(i = 2; i &lt;= lastRow; i++){
+        //Check for dateAdded and process based on that
+        var range = sheet.getRange(&quot;E&quot;+i);
+        processRow(range);
+    }
+
+}
+
+function processRow(range) {
+    var sheet = range.getSheet();
+    var rangeRow = range.getRow();
+
+    if(rangeRow &lt;= 1){
+      return;
+    }
+
+    Logger.log(&quot;Processing Row #&quot;+rangeRow);
+
+    //Column ranges
+    var dateAddedRange = sheet.getRange(&quot;E&quot; + rangeRow);
+    var dateCompleteRange = sheet.getRange(&quot;F&quot; + rangeRow);
+    var taskRange = sheet.getRange(&quot;B&quot; + rangeRow);
+    var statusRange = sheet.getRange(&quot;A&quot; + rangeRow);
+    var urgencyRange = sheet.getRange(&quot;C&quot; + rangeRow);
+    var labelRange = sheet.getRange(&quot;D&quot; + rangeRow);
+
+    var date = new Date();
+    var datestring = (&quot;0&quot; + date.getDate()).slice(-2) + &quot;-&quot; + (&quot;0&quot;+(date.getMonth()+1)).slice(-2) + &quot;-&quot; +
+        date.getFullYear() + &quot; &quot; + (&quot;0&quot; + date.getHours()).slice(-2) + &quot;:&quot; + (&quot;0&quot; + date.getMinutes()).slice(-2);
+
+    Logger.log(&quot;Automagic Timestamps for Row #&quot;+rangeRow);
+    //Automagic Timestamps
+    if(taskRange.getValue() != '' &amp;&amp; dateAddedRange.getValue() == ''){
+        dateAddedRange.setValue(datestring);
+    }
+    Logger.log(&quot;Parsing labels for Row #&quot;+rangeRow);
+    //Parse labels
+    if(taskRange.getValue() != ''){
+        var reg = /label(\S*)/g;
+        var match = reg.exec(taskRange.getValue());
+        var label = '';
+
+        while (match != null) {
+            label += match[0].replace(/label/g, &quot;&quot;) + &quot;, &quot;;
+            match = reg.exec(taskRange.getValue());
+        }
+
+        label = label.replace(&quot;label&quot;, &quot;&quot;)
+
+        if(label.substring(0, label.length - 2).length)
+            labelRange.setValue(label.substring(0, label.length - 2));
+        taskRange.setValue(taskRange.getValue().replace(/label\S*/g, &quot;&quot;).trim());
+    }
+
+    Logger.log(&quot;Parsing Statuses for Row #&quot;+rangeRow);
+    //Parse statuses
+    if(taskRange.getValue() != ''){
+        var reg = /status(\S*)/g;
+        var match = reg.exec(taskRange.getValue());
+        var status = '';
+
+        while (match != null) {
+            status += match[0].replace(/status/g, &quot;&quot;) + &quot;, &quot;;
+            match = reg.exec(taskRange.getValue());
+        }
+
+        status = status.replace(&quot;status&quot;, &quot;&quot;)
+
+        if(status.substring(0, status.length - 2).length)
+            statusRange.setValue(status.substring(0, status.length - 2));
+        taskRange.setValue(taskRange.getValue().replace(/status\S*/g, &quot;&quot;).trim());
+    }
+
+    Logger.log(&quot;Parsing Urgencies for Row #&quot;+rangeRow);
+    //Parse urgencies
+    if(taskRange.getValue() != ''){
+        var reg = /urgency(\S*)/g;
+        var match = reg.exec(taskRange.getValue());
+        var urgency = '';
+
+        while (match != null) {
+            urgency += match[0].replace(/urgency/g, &quot;&quot;) + &quot;, &quot;;
+            match = reg.exec(taskRange.getValue());
+        }
+
+        urgency = urgency.replace(&quot;urgency&quot;, &quot;&quot;)
+
+        if(urgency.substring(0, urgency.length - 2).length)
+            urgencyRange.setValue(urgency.substring(0, urgency.length - 2));
+        taskRange.setValue(taskRange.getValue().replace(/urgency\S*/g, &quot;&quot;).trim());
+    }
+
+    Logger.log(&quot;Complete Date for Row #&quot;+rangeRow);
+    //Set completion date
+    if(dateCompleteRange.getValue() == '' &amp;&amp; statusRange.getValue().toLowerCase() == &quot;done&quot;){
+        dateCompleteRange.setValue(datestring);
+    }
+
+    //Auto-set Status if blank
+    if(taskRange.getValue() != '' &amp;&amp; statusRange.getValue() == ''){
+        statusRange.setValue(&quot;Todo&quot;);
+    }
+
+    //Auto-set Urgency if blank
+    if(taskRange.getValue() != '' &amp;&amp; urgencyRange.getValue() == ''){
+        urgencyRange.setValue(&quot;Normal&quot;);
+    }
+
+    Logger.log(&quot;Auto ID for Row #&quot;+rangeRow);
+    //Auto ID
+    var idRange = sheet.getRange(&quot;G&quot;+rangeRow);
+    idRange.setValue(rangeRow);
+
+    //Remove #todo
+    taskRange.setValue(taskRange.getValue().replace(&quot;#todo&quot;,&quot;&quot;));
+
+    //Removing unnecessary fields when task is unset
+    if(taskRange.getValue().trim() == ''){
+      Logger.log(&quot;preDelete for Row #&quot;+rangeRow);
+      sheet.deleteRow(rangeRow);
+    }else{
+      Logger.log(&quot;Row #&quot;+rangeRow+&quot; was not empty: &quot;+taskRange.getValue().trim());
+    }
+}
+
+function doGet(event){
+    var targetRow = event.parameter.row;
+    var sheet = SpreadsheetApp.openByUrl(&quot;https://docs.google.com/spreadsheets/d/&quot;+event.parameter.sheetId+&quot;/edit&quot;).getSheets()[0];
+
+    //This is a login request
+    if(targetRow == -3){
+      var html = '&lt;style&gt;body{background-color:#1565C0;}.page{min-height:100vh;min-width:100vw;}.btn{box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16),0 2px 10px 0 rgba(0,0,0,0.12);padding:4vh;font-family:&quot;Arial&quot;;margin-top:30vh;margin-left:30vw;margin-right:auto;min-width:80vw;font-size:4vw;background-color:#fb8c00;color:white;font-weight:500;border-radius:5vh;text-decoration:none;}&lt;/style&gt;';
+      html += '&lt;div class=&quot;page&quot;&gt;&lt;br/&gt;&lt;br/&gt;&lt;br/&gt;&lt;a href=&quot;'+todoAppUrl+'&quot; class=&quot;btn&quot;&gt;Return to Application&lt;/a&gt;&lt;/div&gt;';
+      return HtmlService.createHtmlOutput(html);
+    //This is a test for access
+    }else if(targetRow == -2){
+      return ContentService.createTextOutput('loginNeeded(false);').setMimeType(ContentService.MimeType.JAVASCRIPT);
+    //This is a new entry!
+    }else if(targetRow == -1){
+      sheet.appendRow([event.parameter.status, event.parameter.task, event.parameter.urgency, event.parameter.label]);
+    }else{
+      Logger.log(&quot;Web request to change Row #&quot;+targetRow);
+
+      updateColumn(&quot;status&quot;, targetRow, event.parameter.status, sheet);
+      updateColumn(&quot;task&quot;, targetRow, event.parameter.task, sheet);
+      updateColumn(&quot;urgency&quot;, targetRow, event.parameter.urgency, sheet);
+      updateColumn(&quot;label&quot;, targetRow, event.parameter.label, sheet);
+    }
+
+    Utilities.sleep(300)
+    findRowsToProcess(event.parameter.sheetId);
+
+    return ContentService.createTextOutput('').setMimeType(ContentService.MimeType.JAVASCRIPT);
+}
+
+function updateColumn(targetColumn, targetRow, targetValue, sheet){
+    var targetRange;
+
+    switch(targetColumn){
+        case &quot;status&quot;:
+            Logger.log(&quot;Targeting A&quot;+targetRow);
+            targetRange = sheet.getRange(&quot;A&quot;+targetRow);
+            break;
+        case &quot;task&quot;:
+            Logger.log(&quot;Targeting B&quot;+targetRow);
+            targetRange = sheet.getRange(&quot;B&quot;+targetRow);
+            break;
+        case &quot;urgency&quot;:
+            Logger.log(&quot;Targeting C&quot;+targetRow);
+            targetRange = sheet.getRange(&quot;C&quot;+targetRow);
+            break;
+        case &quot;label&quot;:
+            Logger.log(&quot;Targeting D&quot;+targetRow);
+            targetRange = sheet.getRange(&quot;D&quot;+targetRow);
+            break;
+        case &quot;dateadded&quot;:
+            Logger.log(&quot;Targeting E&quot;+targetRow);
+            targetRange = sheet.getRange(&quot;E&quot;+targetRow);
+            break;
+        case &quot;datecompleted&quot;:
+            Logger.log(&quot;Targeting F&quot;+targetRow);
+            targetRange = sheet.getRange(&quot;F&quot;+targetRow);
+            break;
+    }
+
+    if(targetRow &gt; 1){
+        Logger.log(&quot;Setting Row &quot;+targetRange.getRow()+&quot; Col &quot;+targetRange.getColumn()+&quot; to &quot;+targetValue);
+        targetRange.setValue(targetValue);
+    }
+
+}                </pre>
+                <h4>3. Deploy the script as a web service</h4>
+                <p>Open the "Publish" menu and select "Deploy as web app". Name the project something useful and hit OK.
+                Leave all the settings as they are and hit the "Deploy" button.  Copy the "Current web app URL" into your
+                clipboard for the next step.</p>
+                <img src="img/deployAsWebApp1.png"/>
+                <img src="img/deployAsWebApp2.png"/>
+                <h4>4. Add the web app URL to main.js</h4>
+                <p>Find main.js in /todo/js/main.js and edit the 7th line that reads "var scriptUrl = ".
+                Just paste the url you just copied into the double quotes.</p>
+                <img src="img/pasteScriptUrl.png"/>
+                <h4>5. Set up the triggers on the application</h4>
+                <p>Back in the Script Editor open the "Resources" menu and select "Current project's triggers"
+                Click on "No triggers set up. Click here to add one now.".  For the first dropdown select "findRowsToProcess".
+                For the second dropdown leave it at "Time-driven".  For the third dropdown select "Minutes timer".
+                For the fourth dropdown leave it at "Every minute" and hit OK.  If prompted to allow access to the sheet
+                offline, do so.</p>
+                <img src="img/scriptTriggers1.png"/>
+                <img src="img/scriptTriggers2.png"/>
+                <h4>6. Publish the spreasheet itself</h4>
+                <p>Go back to the spreadsheet (table view, not the Script Editor) and open the "File" menu.
+                Select the "Publish to the web" option.  Change the dropdown that reads "Entire Document" to "Sheet1" and click publish</p>
+                <h4>7. Add the sheet id URL to main.js</h4>
+                <p>Find main.js in /todo/js/main.js again and edit the 5th line that reads "var googleSheetId = ".
+                Go back to your spreadsheet (table view, not the Script Editor) and copy the string that appears between "/d" and "/edit".
+                It should be a long alphanumeric mess with some punctuation (e.g. 1ONclNHjzmvWM_EGAfRYi-WoxfkqZgseoo3OrF8Nm1KA).
+                Paste that id into the double quotes after "var googleSheetId = ".  That should be it, you're done!</p>
+                <img src="img/pasteSheetId.png"/>
+                <h4>8.  OPTIONAL Setup IFTTT</h4>
+                <p>Set up a new recipe with SMS as the trigger.  Choose either trigger option (if you pick hashtag you'll preface all texts with
+                a hashtag to trigger this recipe).  For the "That" part select Google Drive and choose the "Add row to spreadsheet" option.
+                Put in your spreadsheet name (REMEMBER, the spreadsheet must be in a top-level folder named IFTTT).
+                For formatted row enter the following without quotes "||| {{Message}}".
+                For Drive folder path leave the empty (delete what is already there). Click create action give it a
+                description and you're done!</p>
+            </div>
+        </div>
+        <div class="todoTable ">
+            <div class="todoRow todoHeaderRow z-depth-2">
+                <div class="todoCol controlCol">Controls</div>
+                <div class="todoCol statusCol">Status</div>
+                <div class="todoCol taskCol">Task</div>
+                <div class="todoCol urgencyCol">Urgency</div>
+                <div class="todoCol labelCol">Label</div>
+                <div class="todoCol dateAddedCol">Added On</div>
+                <div class="todoCol dateCompletedCol">Completed On</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

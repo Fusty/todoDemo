@@ -1,0 +1,241 @@
+@media (max-width: 890px) {
+    .todoTable {
+        min-width:99vw;
+    }
+
+    .todoRow {
+        min-width:99vw;
+    }
+    .setupInstructions {
+        max-width:95vw;
+    }
+}
+
+@media (min-width: 891px) {
+    .todoTable {
+        min-width:80vw;
+    }
+
+    .todoRow {
+        min-width:80vw;
+    }
+
+    .setupInstructions {
+        max-width:50vw;
+    }
+}
+
+body {
+    box-sizing:border-box;
+}
+
+.page {
+    display:flex;
+    flex-direction:column;
+    justify-content:space-around;
+    align-items:center;
+
+    min-height:100vh;
+    min-width:100vw;
+}
+
+.nav {
+    flex:0 0 auto;
+    align-self:flex-start;
+
+    min-width:100vw;
+
+    display:flex;
+    flex-direction:row;
+    justify-content:flex-end;
+    align-items:flex-start;
+}
+
+.editSpreadsheet {
+    margin:10px;
+}
+
+.loginCard {
+    background-color:#dadada;
+    display:none;
+}
+
+.setupInstructions {
+    display:none;
+    background-color:#dadada;
+}
+
+.setupInstructions img {
+    max-width:40vw;
+}
+
+.card .card-action a {
+    color:black;
+}
+
+.todoTable {
+    flex:1 0 auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items:flex-start;
+}
+
+.todoRow:nth-child(2n) {
+    background-color: #e6e6e6;
+}
+
+.todoRow {
+    position:relative;
+    background-color: #dadada;
+    display:flex;
+    flex-direction:row;
+    justify-content:flex-start;
+    align-items:center;
+
+    padding:5px;
+}
+
+.todoHeaderRow {
+    font-weight: 500;
+    font-size:larger;
+}
+
+.todoCol {
+    flex-basis:10%;
+}
+
+.controlCol {
+    flex-grow:2;
+
+    display:flex;
+    flex-direction:row;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.statusCol {
+    flex-grow:1;
+    align-self:flex-start;
+}
+
+.todoHeaderRow .statusCol {
+    align-self:center;
+}
+
+.taskCol {
+    flex-grow:5;
+    align-self:flex-start;
+}
+
+.todoHeaderRow .taskCol {
+    align-self:center;
+}
+
+.urgencyCol {
+    flex-grow:1;
+    align-self:flex-start;
+}
+
+.todoHeaderRow .urgencyCol {
+    align-self:center;
+}
+
+.labelCol {
+    flex-grow:1;
+
+}
+
+.dateAddedCol {
+    flex-grow:2;
+}
+
+.dateCompletedCol {
+    flex-grow:2;
+}
+
+.new-row-button {
+    position:absolute;
+    left:-50px;
+    top:15px;
+    font-size:larger;
+    display:none;
+}
+
+.todoDataRow:last-child .new-row-button {
+    display:inline;
+}
+
+.chip {
+    margin-left:2px;
+    margin-right:2px;
+    position:relative!important;
+    color:white;
+}
+
+pre {
+    max-width:600px;
+    padding:5px;
+    max-height:800px;
+}
+
+.spinning {
+    animation:spinner 2s infinite;
+}
+
+button {
+    margin-left:3px;
+    margin-right:3px;
+}
+
+.confirm-delete-button {
+    position:absolute;
+    left:-50px;
+}
+
+select {
+    display:inline!important;
+    max-width:90%;
+    min-width:90%;
+    background-color:inherit;
+    border: 0px solid white;
+}
+
+textarea {
+    min-width:98%;
+    max-width:98%;
+    border: 0px solid white;
+}
+
+@-webkit-keyframes spinner {
+    0%   { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(360deg); }
+}
+@-moz-keyframes spinner {
+    0%   { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(360deg); }
+}
+@-o-keyframes spinner {
+    0%   { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(360deg); }
+}
+@keyframes spinner {
+    0%   { transform: rotateZ(0deg); }
+    100% { transform: rotateZ(360deg); }
+}
+
+::-webkit-input-placeholder {
+    color: #727272;
+}
+
+:-moz-placeholder { /* Firefox 18- */
+    color: #727272;
+}
+
+::-moz-placeholder {  /* Firefox 19+ */
+    color: #727272;
+}
+
+:-ms-input-placeholder {
+    color: #727272;
+}
