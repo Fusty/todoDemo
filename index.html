@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <title>Todo App</title>
 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="css/materialize.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script src="https://code.jquery.com/jquery-2.1.4.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-    <script src="js/jquery.elastic.source.js"></script>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 
+    <script src="js/jquery.elastic.source.js"></script>
+    <script src="js/materialize.min.js"></script>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
     <style>
         @media (max-width: 890px) {
             .todoTable {
@@ -32,15 +36,6 @@
 
         body {
             box-sizing:border-box;
-            font-family:"Arial";
-        }
-
-        select {
-            min-width:90%;
-        }
-
-        textarea {
-            min-width:98%;
         }
 
         .page {
@@ -65,6 +60,8 @@
         }
 
         .todoRow {
+            position:relative;
+            background-color: #dadada;
             display:flex;
             flex-direction:row;
             justify-content:flex-start;
@@ -74,7 +71,6 @@
         }
 
         .todoHeaderRow {
-            font-family:"Arial Black";
             font-weight: 500;
             font-size:larger;
         }
@@ -84,7 +80,7 @@
         }
 
         .controlCol {
-            flex-grow:1;
+            flex-grow:2;
 
             display:flex;
             flex-direction:row;
@@ -94,6 +90,11 @@
 
         .statusCol {
             flex-grow:1;
+            align-self:flex-start;
+        }
+
+        .todoHeaderRow .statusCol {
+            align-self:center;
         }
 
         .taskCol {
@@ -107,16 +108,16 @@
 
         .urgencyCol {
             flex-grow:1;
+            align-self:flex-start;
+        }
+
+        .todoHeaderRow .urgencyCol {
+            align-self:center;
         }
 
         .labelCol {
             flex-grow:1;
 
-            display:flex;
-            flex-direction:row;
-            justify-content:flex-start;
-            align-items:flex-start;
-            flex-wrap:wrap;
         }
 
         .dateAddedCol {
@@ -127,21 +128,91 @@
             flex-grow:2;
         }
 
-        .label {
-            margin-right:2px;
-            font-family:"Arial";
-        }
-
-        .btn {
+        .new-row-button {
+            position:absolute;
+            left:-50px;
+            top:15px;
             font-size:larger;
+            display:none;
         }
 
+        .todoDataRow:last-child .new-row-button {
+            display:inline;
+        }
+
+        .chip {
+            margin-left:2px;
+            margin-right:2px;
+            position:relative!important;
+            color:white;
+        }
+
+        .spinning {
+            animation:spinner 2s infinite;
+        }
+
+        button {
+            margin-left:3px;
+            margin-right:3px;
+        }
+
+        .confirm-delete-button {
+            position:absolute;
+            left:-50px;
+        }
+
+        select {
+            display:inline!important;
+            max-width:90%;
+            min-width:90%;
+            background-color:inherit;
+            border: 0px solid white;
+        }
+
+        textarea {
+            min-width:98%;
+            max-width:98%;
+            border: 0px solid white;
+        }
+
+        @-webkit-keyframes spinner {
+            0%   { transform: rotateZ(0deg); }
+            100% { transform: rotateZ(360deg); }
+        }
+        @-moz-keyframes spinner {
+            0%   { transform: rotateZ(0deg); }
+            100% { transform: rotateZ(360deg); }
+        }
+        @-o-keyframes spinner {
+            0%   { transform: rotateZ(0deg); }
+            100% { transform: rotateZ(360deg); }
+        }
+        @keyframes spinner {
+            0%   { transform: rotateZ(0deg); }
+            100% { transform: rotateZ(360deg); }
+        }
+
+        ::-webkit-input-placeholder {
+            color: #727272;
+        }
+
+        :-moz-placeholder { /* Firefox 18- */
+            color: #727272;
+        }
+
+        ::-moz-placeholder {  /* Firefox 19+ */
+            color: #727272;
+        }
+
+        :-ms-input-placeholder {
+            color: #727272;
+        }
 
     </style>
 </head>
 <body>
-    <div class="page">
-        <div class="todoTable">
+    <div class="page blue darken-3">
+        <div class="todoTable z-depth-2">
             <div class="todoRow todoHeaderRow">
                 <div class="todoCol controlCol">Controls</div>
                 <div class="todoCol statusCol">Status</div>
@@ -170,19 +241,23 @@
         var parent = $(".todoDataRow-"+rowNum);
         var data = {};
 
+        $($(".save-button", parent).children()[0]).addClass("spinning");
+
         data.status = $(".statusDrop", parent).children(":selected").text();
-        data.task = $($(".taskTextarea", parent).parent().children()[1]).text();
+        data.task = $($(".taskTextarea", parent).parent().children()[1]).text().trim();
         data.urgency = $(".urgencyDrop", parent).children(":selected").text();
-        data.sheetId = "1ODsN0A41PbET2DJGlxVOVfFqr4Jwwy65TvsDt4ZRM8M";
+        data.sheetId = "1fPbwpJ3NqfxVjWQKSDyk9cfqep2wXjdMMO446_OMFSw";
         data.row = rowNum;
         data.labels = [];
-        $(".label", parent).each(function(){
+        $(".chip", parent).each(function(){
             data.labels.push($(this).text());
         });
 
         data.labels = data.labels.join(", ");
 
-        var url = "https://script.google.com/macros/s/AKfycbx9kDQByqGVD2n_mgBrmfAZ6xkrrC6ijeYM_CLGmbutnTKVC5E/exec?";
+        console.log(data);
+
+        var url = "https://script.google.com/macros/s/AKfycbzrrLk8qaJuuLsW5qMB1x0FpXb9oz2Lgf9w77a-7p2aYLHi-CI/exec?";
 
         url += "status="+data.status;
         url += "&task="+data.task;
@@ -191,30 +266,104 @@
         url += "&row="+data.row;
         url += "&sheetId="+data.sheetId;
 
-        if(task == ''){
+        if(data.task == ''){
             if(confirm("A blank task will be deleted, are you sure?")){
                 $.ajax({
                     type: 'GET',
                     url: url,
-                    async: false,
+                    async: true,
                     contentType: "application/json",
                     dataType: 'jsonp',
                     complete: function(){
                         inTransit = false;
-                        getData();
+                        $($(".save-button", parent).children()[0]).removeClass("spinning");
+                        setTimeout(function(){getData();}, 200);
                     }
                 });
+            }else{
+                $($(".save-button", parent).children()[0]).removeClass("spinning");
             }
         }else{
             $.ajax({
                 type: 'GET',
                 url: url,
-                async: false,
+                async: true,
                 contentType: "application/json",
                 dataType: 'jsonp',
                 complete: function(){
                     inTransit = false;
-                    getData();
+                    $($(".save-button", parent).children()[0]).removeClass("spinning");
+                    setTimeout(function(){getData();}, 200);
+                }
+            });
+
+        }
+    }
+
+    function saveNewRow(){
+        inTransit = true;
+        //Gather Row Data
+        var parent = $(".todoNewRow");
+        var data = {};
+
+        $($(".save-button", parent).children()[0]).addClass("spinning");
+
+        data.status = $(".statusDrop", parent).children(":selected").text();
+        data.task = $($(".taskTextarea", parent).parent().children()[1]).text().trim();
+        data.urgency = $(".urgencyDrop", parent).children(":selected").text();
+        data.sheetId = "1fPbwpJ3NqfxVjWQKSDyk9cfqep2wXjdMMO446_OMFSw";
+        data.row = -1;
+        data.labels = $($(".newLabelTextarea").parent().children()[1]).text().trim();
+        console.log(data.labels.length);
+        data.labels = data.labels.replace(",", "");
+        tempLabels = data.labels.split(" ");
+        data.labels = [];
+
+        $.each(tempLabels, function(index, value){
+            data.labels.push(value);
+        });
+
+        data.labels = data.labels.join(", ");
+
+        console.log(data);
+
+        var url = "https://script.google.com/macros/s/AKfycbzrrLk8qaJuuLsW5qMB1x0FpXb9oz2Lgf9w77a-7p2aYLHi-CI/exec?";
+
+        url += "status="+data.status;
+        url += "&task="+data.task;
+        url += "&urgency="+data.urgency;
+        url += "&label="+data.labels;
+        url += "&row="+data.row;
+        url += "&sheetId="+data.sheetId;
+
+        if(data.task == ''){
+            if(confirm("A blank task will be deleted, are you sure?")){
+                $.ajax({
+                    type: 'GET',
+                    url: url,
+                    async: true,
+                    contentType: "application/json",
+                    dataType: 'jsonp',
+                    complete: function(){
+                        inTransit = false;
+                        $($(".save-button", parent).children()[0]).removeClass("spinning");
+                        setTimeout(function(){getData();}, 200);
+                    }
+                });
+            }else{
+                $($(".save-button", parent).children()[0]).removeClass("spinning");
+            }
+        }else{
+            $.ajax({
+                type: 'GET',
+                url: url,
+                async: true,
+                contentType: "application/json",
+                dataType: 'jsonp',
+                complete: function(){
+                    inTransit = false;
+                    $($(".save-button", parent).children()[0]).removeClass("spinning");
+                    setTimeout(function(){getData();}, 200);
                 }
             });
 
@@ -222,26 +371,70 @@
     }
 
     function deleteRow(rowNum){
-        console.log("Deleting Row #"+rowNum);
+        inTransit = true;
+        //Gather Row Data
+        var parent = $(".todoDataRow-"+rowNum);
+
+        $($(".delete-button", parent).children()[0]).addClass("spinning");
+
+        var url = "https://script.google.com/macros/s/AKfycbzrrLk8qaJuuLsW5qMB1x0FpXb9oz2Lgf9w77a-7p2aYLHi-CI/exec?";
+
+        url += "status=Done";
+        url += "&task=";
+        url += "&urgency=Normal";
+        url += "&label=";
+        url += "&row="+rowNum;
+        url += "&sheetId="+"1fPbwpJ3NqfxVjWQKSDyk9cfqep2wXjdMMO446_OMFSw";
+
+        $.ajax({
+            type: 'GET',
+            url: url,
+            async: false,
+            contentType: "application/json",
+            dataType: 'jsonp',
+            complete: function(){
+                inTransit = false;
+                $($(".delete-button", parent).children()[0]).removeClass("spinning");
+                setTimeout(function(){getData();}, 200);
+            }
+        });
 
     }
 
     function getData(){
         if(!inTransit){
-            var sheetId = "1ODsN0A41PbET2DJGlxVOVfFqr4Jwwy65TvsDt4ZRM8M";
+            var sheetId = "1fPbwpJ3NqfxVjWQKSDyk9cfqep2wXjdMMO446_OMFSw";
 
             var sheetUrl = "https://spreadsheets.google.com/feeds/list/" + sheetId + "/od6/public/values?alt=json";
 
             $.getJSON(sheetUrl, function(data) {
-                updateTable(data.feed.entry);
+                temp = data;
+                data = [];
+                $.each(temp.feed.entry, function(index, value){
+                    tmpObj = {};
+                    tmpObj.id = value.gsx$id.$t;
+                    tmpObj.status = value.gsx$status.$t;
+                    tmpObj.task = value.gsx$task.$t;
+                    tmpObj.urgency = value.gsx$urgency.$t;
+                    tmpObj.label = value.gsx$label.$t;
+                    tmpObj.dateadded = value.gsx$dateadded.$t;
+                    tmpObj.datecompleted = value.gsx$datecompleted.$t;
+
+                    data.push(tmpObj);
+                });
+
+                updateTable(data);
             });
         }
     }
 
     function updateTable(data){
-        if(JSON.stringify(data) === JSON.stringify(prevData)){
+        console.log(data);
+        if(JSON.stringify(data) == JSON.stringify(prevData)){
             //Do nothing
+            console.log("same data");
         }else{
+            console.log("new data");
             //otherwise update the table
             prevData = data;
 
@@ -249,20 +442,9 @@
             $('.todoTable').html(contentHeaderOnly);
 
             //Iterate through data
-            $(data).each(function(){
-                if(this.gsx$dateadded.$t != ''){
-                    var content = '<div class="todoRow todoDataRow todoDataRow-' + this.gsx$id.$t + '">' +
-                            '<div class="todoCol controlCol btn-group"><button class="btn btn-sm btn-danger btn-delete" onclick="$(\'.todoDataRow-'+this.gsx$id.$t+' .btn-confirmDelete\').toggle();"><span class="glyphicon glyphicon-trash"></span></button>' +
-                            '<button class="btn btn-sm btn-warning btn-confirmDelete" style="display:none;" onclick="deleteRow('+this.gsx$id.$t+')">Sure?</button>' +
-                            '<button class="btn btn-sm btn-primary btn-save" onclick="saveRow('+this.gsx$id.$t+')"><span class="glyphicon glyphicon-floppy-disk"></span></button></div>' +
-                            '<div class="todoCol statusCol">' + generateStatusDropdown(this.gsx$status.$t) + '</div>' +
-                            '<div class="todoCol taskCol">' + generateTaskField(this.gsx$task.$t) + '</div>' +
-                            '<div class="todoCol urgencyCol">' + generateUrgencyDropdown(this.gsx$urgency.$t) + '</div>' +
-                            '<div class="todoCol labelCol">' + generateLabels(this.gsx$label.$t) + '</div>' +
-                            '<div class="todoCol dateAddedCol">' + this.gsx$dateadded.$t + '</div>' +
-                            '<div class="todoCol dateCompletedCol">' + this.gsx$datecompleted.$t + '</div>' +
-                            '</div>';
-                    $('.todoTable').append(content);
+            $.each(data, function(index, value){
+                if(value.dateadded != ''){
+                    $('.todoTable').append(makeRow(value));
                 }
             });
 
@@ -271,8 +453,44 @@
         }
     }
 
+    function makeRow(data){
+        var content = '<div class="todoRow todoDataRow todoDataRow-' + data.id + '">' +
+                '<button class="new-row-button btn-floating orange darken-2" onclick="addNewRow()">+</button>' +
+                '<div class="todoCol controlCol"><button class="delete-button btn-floating btn-large red" onclick="$(\'.todoDataRow-'+data.id+' .confirm-delete-button\').toggle();"><i class="fa fa-trash"></i></button>' +
+                '<button class="confirm-delete-button orange darken-1 btn-floating btn-large" style="display:none;" onclick="deleteRow('+data.id+')">Sure?</button>' +
+                '<button class="save-button btn-floating btn-large " onclick="saveRow('+data.id+')"><i class="fa fa-floppy-o"></i></button></div>' +
+                '<div class="todoCol statusCol browser-default">' + generateStatusDropdown(data.status) + '</div>' +
+                '<div class="todoCol taskCol">' + generateTaskField(data.task) + '</div>' +
+                '<div class="todoCol urgencyCol">' + generateUrgencyDropdown(data.urgency) + '</div>' +
+                '<div class="todoCol labelCol">' + generateLabels(data.label) + '</div>' +
+                '<div class="todoCol dateAddedCol">' + data.dateadded + '</div>' +
+                '<div class="todoCol dateCompletedCol">' + data.datecompleted + '</div>' +
+                '</div>';
+        return content;
+    }
+
+    function makeNewRow(){
+        var content = '<div class="todoRow todoNewRow">' +
+                '<div class="todoCol controlCol"><button class="delete-button btn-floating btn-large red" onclick="$(this).parent().parent().remove();"><i class="fa fa-trash"></i></button>' +
+                '<button class="save-button btn-floating btn-large " onclick="saveNewRow()"><i class="fa fa-floppy-o"></i></button></div>' +
+                '<div class="todoCol statusCol browser-default">' + generateStatusDropdown('Todo') + '</div>' +
+                '<div class="todoCol taskCol">' + generateTaskField('') + '</div>' +
+                '<div class="todoCol urgencyCol">' + generateUrgencyDropdown('Normal') + '</div>' +
+                '<div class="todoCol labelCol newLabelCol"><textarea class="elastic newLabelTextarea" placeholder="Label1, Label2, etc."></textarea></div>' +
+                '<div class="todoCol dateAddedCol"></div>' +
+                '<div class="todoCol dateCompletedCol"></div>' +
+                '</div>';
+        return content;
+    }
+
+    function addNewRow(){
+        $('.todoTable').append(makeNewRow());
+        $('.elastic').elastic();
+
+    }
+
     function generateTaskField(task){
-        return '<textarea class="elastic taskTextarea">' + task + '</textarea>';
+        return '<textarea class="elastic taskTextarea" placeholder="Some new task">' + task + '</textarea>';
     }
 
     function generateStatusDropdown(selected){
@@ -293,7 +511,7 @@
                 '<option ' + (selected == 'Low' ? "selected" : "") + '>Low</option>' +
                 '<option ' + (selected == 'Normal' ? "selected" : "") + '>Normal</option>' +
                 '<option ' + (selected == 'High' ? "selected" : "") + '>High</option>' +
-                '<option ' + (selected == 'Higer' ? "selected" : "") + '>Higer</option>' +
+                '<option ' + (selected == 'Higher' ? "selected" : "") + '>Higher</option>' +
                 '<option ' + (selected == 'Highest' ? "selected" : "") + '>Highest</option>' +
                 '</select>';
         return content;
@@ -305,7 +523,7 @@
         var content = '';
 
         $.each(labels, function(index, label){
-            content += '<span class="label label-info">' + label + '</span>';
+            content += '<div class="chip z-depth-1 orange darken-1">' + label + '</div>';
         });
 
         return content
