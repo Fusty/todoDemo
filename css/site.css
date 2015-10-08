@@ -65,6 +65,10 @@ body {
     background-color:#dadada;
 }
 
+.setupInstructions img {
+    max-width:40vw;
+}
+
 .card .card-action a {
     color:black;
 }

@@ -40,7 +40,7 @@
                 If you wish to integrate with <a href="http://ifttt.com">IFTTT</a>
                 you must create the spreadsheet in a folder named "IFTTT".  Name the document something useful.
                 Delete all but the very first row in this spreadsheet.</p>
-                <img src="http://placehold.it/450x250"/>
+                <img src="img/spreadsheetcleaned.png"/>
                 <h4>2.  Add the script code</h4>
                 <p>Click the "Tools" menu and select "Script Editor".  Select the option "Blank Project".
                 Once you are in the editor delete everything and Add the code in the block below.  Just cut and paste it in.
@@ -272,15 +272,20 @@ function updateColumn(targetColumn, targetRow, targetValue, sheet){
                 <p>Open the "Publish" menu and select "Deploy as web app". Name the project something useful and hit OK.
                 Leave all the settings as they are and hit the "Deploy" button.  Copy the "Current web app URL" into your
                 clipboard for the next step.</p>
+                <img src="img/deployAsWebApp1.png"/>
+                <img src="img/deployAsWebApp2.png"/>
                 <h4>4. Add the web app URL to main.js</h4>
                 <p>Find main.js in /todo/js/main.js and edit the 7th line that reads "var scriptUrl = ".
                 Just paste the url you just copied into the double quotes.</p>
+                <img src="img/pasteScriptUrl.png"/>
                 <h4>5. Set up the triggers on the application</h4>
                 <p>Back in the Script Editor open the "Resources" menu and select "Current project's triggers"
                 Click on "No triggers set up. Click here to add one now.".  For the first dropdown select "findRowsToProcess".
                 For the second dropdown leave it at "Time-driven".  For the third dropdown select "Minutes timer".
                 For the fourth dropdown leave it at "Every minute" and hit OK.  If prompted to allow access to the sheet
                 offline, do so.</p>
+                <img src="img/scriptTriggers1.png"/>
+                <img src="img/scriptTriggers2.png"/>
                 <h4>6. Publish the spreasheet itself</h4>
                 <p>Go back to the spreadsheet (table view, not the Script Editor) and open the "File" menu.
                 Select the "Publish to the web" option.  Change the dropdown that reads "Entire Document" to "Sheet1" and click publish</p>
@@ -289,6 +294,7 @@ function updateColumn(targetColumn, targetRow, targetValue, sheet){
                 Go back to your spreadsheet (table view, not the Script Editor) and copy the string that appears between "/d" and "/edit".
                 It should be a long alphanumeric mess with some punctuation (e.g. 1ONclNHjzmvWM_EGAfRYi-WoxfkqZgseoo3OrF8Nm1KA).
                 Paste that id into the double quotes after "var googleSheetId = ".  That should be it, you're done!</p>
+                <img src="img/pasteSheetId.png"/>
                 <h4>8.  OPTIONAL Setup IFTTT</h4>
                 <p>Set up a new recipe with SMS as the trigger.  Choose either trigger option (if you pick hashtag you'll preface all texts with
                 a hashtag to trigger this recipe).  For the "That" part select Google Drive and choose the "Add row to spreadsheet" option.
