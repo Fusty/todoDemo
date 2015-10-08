@@ -253,7 +253,7 @@
             data.labels.push($(this).text());
         });
 
-        data.labels = data.labels.join(", ");
+        data.labels = data.labels.join(", ").trim();
 
         console.log(data);
 
@@ -323,7 +323,7 @@
             data.labels.push(value);
         });
 
-        data.labels = data.labels.join(", ");
+        data.labels = data.labels.join(", ").trim();
 
         console.log(data);
 
@@ -525,7 +525,9 @@
         var content = '';
 
         $.each(labels, function(index, label){
-            content += '<div class="chip z-depth-1 orange darken-1">' + label + '</div>';
+            if(label.trim().length > 0){
+                content += '<div class="chip z-depth-1 orange darken-1">' + label + '</div>';
+            }
         });
 
         return content
