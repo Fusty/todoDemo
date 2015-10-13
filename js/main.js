@@ -2,9 +2,9 @@ var prevData = {};
 var contentHeaderOnly = '';
 var updateInterval;
 var inTransit = false;
-var googleSheetId = "Paste Sheet Url ID Here";
+var googleSheetId = "Paste Sheet Url ID Here";//Edit this and the commented line below ONLY
 var loginRequired = true;
-var scriptUrl = "Paste Web App Script URL here";
+var scriptUrl = "Paste Web App Script URL here";//Edit this and the commented line above ONLY
 scriptUrl += "?";
 
 
