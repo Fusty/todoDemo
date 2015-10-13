@@ -2,9 +2,9 @@ var prevData = {};
 var contentHeaderOnly = '';
 var updateInterval;
 var inTransit = false;
-var googleSheetId = "1j719DUjL0lf_Pxq07TSfsXfkuTr2FtWGHSG8GU8OzFg";
+var googleSheetId = "Paste Sheet Url ID Here";//Edit this and the commented line below ONLY
 var loginRequired = true;
-var scriptUrl = "https://script.google.com/macros/s/AKfycbwcqp0ernIAVYHaCok7sYZ8lHVyWXVHcUvQxy3Pwommjzafpqcy/exec";
+var scriptUrl = "Paste Web App Script URL here";//Edit this and the commented line above ONLY
 scriptUrl += "?";
 
 
