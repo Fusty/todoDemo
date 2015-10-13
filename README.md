@@ -3,6 +3,9 @@ A simple todo app I can update from my phone (IFTTT, Google Spreadsheets, GH-Pag
 
 Just clone this repo in a web acessible directory and follow the instructions on screen
 
+##Non-Setup Demo
+http://fusty.github.io/todoDemo
+
 ##Overview
 
 1.  Create a spreadsheet in google drive (preferably in a top-level directory called "IFTTT")
