@@ -2,9 +2,9 @@ var prevData = {};
 var contentHeaderOnly = '';
 var updateInterval;
 var inTransit = false;
-var googleSheetId = "1fPbwpJ3NqfxVjWQKSDyk9cfqep2wXjdMMO446_OMFSw";
+var googleSheetId = "1j719DUjL0lf_Pxq07TSfsXfkuTr2FtWGHSG8GU8OzFg";
 var loginRequired = true;
-var scriptUrl = "https://script.google.com/macros/s/AKfycbzrrLk8qaJuuLsW5qMB1x0FpXb9oz2Lgf9w77a-7p2aYLHi-CI/exec";
+var scriptUrl = "https://script.google.com/macros/s/AKfycbwcqp0ernIAVYHaCok7sYZ8lHVyWXVHcUvQxy3Pwommjzafpqcy/exec";
 scriptUrl += "?";
 
 
